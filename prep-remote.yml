@@ -1,18 +1,19 @@
 ---
 - name: Prep Remote Pi
-  hosts: master
+  hosts: all
   become: true
   become_user: root
   vars:
     ansible_ssh_user: pi
     ansible_ssh_pass: raspberry
   tasks:
-    - name: Reboot the machine
-      reboot:
 
     - name: Update apt repo and cache
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
 
     - name: Upgrade all packages
       apt: upgrade=dist force_apt_get=yes
+
+    - name: Reboot the machine
+      reboot:
     

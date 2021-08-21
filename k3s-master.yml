@@ -5,6 +5,9 @@
   become: true
   become_user: root
   tasks:
+    - name: Uninstall any existing version of k3s
+      ansible.builtin.command: /usr/local/bin/k3s-uninstall.sh
+      ignore_errors: yes
 
     - name: Install k3s master
       ansible.builtin.shell: curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" sh -s -

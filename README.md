@@ -29,6 +29,7 @@ This repository contains opinionated playbooks that can be used to prepare a clu
 10. Edit the `inventory.yml` and remove the `ansible_ssh_password` entry and change the `ansible_ssh_host` to your new username
 11. Run `ansible-playbook k3s-prep.yml`
 12. Run `k3s-master.yml -K`
+    1.  The `BECOME` password prompt is asking for you local machine sudo password so that it can write the master token to a file
 13. Run `k3s-nodes.yml`
 
 ## Requirements
@@ -90,6 +91,7 @@ Ansible - pass extra variables when running commands
 - https://kofler.info/kernel-4-0-auf-dem-raspberry-pi/
 - https://galaxy.ansible.com/weareinteractive/ufw
 - https://www.redhat.com/sysadmin/ansible-playbooks-secrets
+- https://rancher.com/docs/k3s/latest/en/installation/uninstall/
 
 ### Gotchas
 

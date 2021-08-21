@@ -1,6 +1,6 @@
 ---
-- name: Initialize Pis
-  hosts: master
+- name: Initialize Pi
+  hosts: node1
   become: true
   become_user: root
   vars:
