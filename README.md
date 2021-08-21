@@ -6,16 +6,25 @@ This repository contains opinionated playbooks that can be used to prepare a clu
 
 **Warning: The intialize.yml playbook disables Wi-Fi & Bluetooth**
 
-## How to use these playbooks?
+## Directions
 
-1. Rename `inventory_template.yml` to `inventory.yml`
-2. Fill out the inventory file with information about your devices
+
+1. Flash RaspianOS Lite onto your SD card using the Raspian Imager
+2. Perform Initial Boot
+   1. Plug the SD card into the Pi
+   2. plug in power
+   3. wait 2 minutes
+   4. Disconnect power
+   5. Remove SD card 
+1. Run `ansible-playbook prep-local.yml`
+2. Plug the SD card back into the Pi & connect power
+3. Rename `inventory_template.yml` to `inventory.yml`
+4. Fill out the inventory file with information about your devices
    1. The attached template is geared toward a cluster, mine has one master and 4 nodes
-3. Run `ansible-playbook ping.yml`
-4. If you see no errors and ping is successful proceed
-5. Run `ansible-playbook prep.yml`
-6. Run `ansible-playbook initialize.yml`
-7. Edit the `inventory.yml` and remove the `ansible_ssh_password` entry and change the `ansible_ssh_host` to your new username
+5. Run `ansible-playbook ping.yml`
+6. Run `ansible-playbook prep-remote.yml`
+7. Run `ansible-playbook initialize.yml`
+8. Edit the `inventory.yml` and remove the `ansible_ssh_password` entry and change the `ansible_ssh_host` to your new username
 
 ## Requirements
 
