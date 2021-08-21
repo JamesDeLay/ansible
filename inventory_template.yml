@@ -1,0 +1,25 @@
+all:
+  vars:
+    ansible_ssh_user: pi
+    ansible_ssh_pass: raspberry
+    ansible_private_key_file: ./keys/<YOUR_KEY_NAME>
+  hosts:
+    master:
+      ansible_host: 0.0.0.1
+    node1:
+      ansible_host: 0.0.0.2
+    node2:
+      ansible_host: 0.0.0.3
+    node3:
+      ansible_host: 0.0.0.4
+    node4:
+      ansible_host: 0.0.0.5
+  children:
+    nodes:
+      hosts:
+        node1:
+        node2:
+        node3:
+        node4:
+  
+  
