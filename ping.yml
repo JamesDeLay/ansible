@@ -1,5 +1,5 @@
 ---
 - name: Test Ping
-  hosts: all
+  hosts: nodes
   tasks:
   - action: ping

@@ -79,10 +79,16 @@
       community.general.ufw:
         logging: 'on'
 
-    - name: Enable OpenSSH for UFW
+    - name: (UFW) enable OpenSSH
       community.general.ufw:
         rule: allow
         name: OpenSSH
+
+    - name: (UFW) enable K3s
+      community.general.ufw:
+        rule: allow
+        port: '6443'
+        comment: K3s
 
     - name: Deny everything and enable UFW
       community.general.ufw:

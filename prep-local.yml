@@ -1,0 +1,27 @@
+---
+- name: Local Pi Image Prep
+  hosts: localhost
+  connection: local
+  vars:
+    path_to_raspian_image: /Users/james_delay/Documents/temp
+    netmask: 192.168.1.1
+  vars_prompt:
+    - name: piname
+      prompt: Give this device a name
+    - name: ipaddr
+      prompt: Set an ip address for this device
+  tasks:
+    - name: Update cmdline file with ipaddress 
+      ansible.builtin.lineinfile:
+        path: "{{ path_to_raspian_image }}/cmdline.txt"
+        line: " cgroup_memory=1 cgroup_enable=memory ip={{ ipaddr }}::{{netmask}}:255.255.255.0:{{piname}}:eth0:off"
+        insertafter:
+    - name: Update config file to enable 64bit architecture
+      ansible.builtin.lineinfile:
+        path: "{{ path_to_raspian_image }}/config.txt"
+        line: " arm_64bit=1"
+        insertafter:
+    - name: Enable ssh by creating ssh file
+      ansible.builtin.shell: "cd {{ path_to_raspian_image }} && touch ssh"
+    
+    
