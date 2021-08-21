@@ -18,13 +18,18 @@ This repository contains opinionated playbooks that can be used to prepare a clu
    5. Remove SD card 
 1. Run `ansible-playbook prep-local.yml`
 2. Plug the SD card back into the Pi & connect power
-3. Rename `inventory_template.yml` to `inventory.yml`
-4. Fill out the inventory file with information about your devices
+3. Test connection to the pi `ping -c 5 <IP ADDRESS>`
+4. `ssh pi@<IP ADDRESS>` to log into the pi and then run `sudo rpi-update`
+5. Rename `inventory_template.yml` to `inventory.yml`
+6. Fill out the inventory file with information about your devices
    1. The attached template is geared toward a cluster, mine has one master and 4 nodes
-5. Run `ansible-playbook ping.yml`
-6. Run `ansible-playbook prep-remote.yml`
-7. Run `ansible-playbook initialize.yml`
-8. Edit the `inventory.yml` and remove the `ansible_ssh_password` entry and change the `ansible_ssh_host` to your new username
+7. Run `ansible-playbook ping.yml`
+8. Run `ansible-playbook prep-remote.yml`
+9. Run `ansible-playbook initialize.yml`
+10. Edit the `inventory.yml` and remove the `ansible_ssh_password` entry and change the `ansible_ssh_host` to your new username
+11. Run `ansible-playbook k3s-prep.yml`
+12. Run `k3s-master.yml -K`
+13. Run `k3s-nodes.yml`
 
 ## Requirements
 
@@ -85,3 +90,20 @@ Ansible - pass extra variables when running commands
 - https://kofler.info/kernel-4-0-auf-dem-raspberry-pi/
 - https://galaxy.ansible.com/weareinteractive/ufw
 - https://www.redhat.com/sysadmin/ansible-playbooks-secrets
+
+### Gotchas
+
+If you're like me and had to re-image a pi and start from scratch (and you used the same ip as the first go-round) you may come across this error when attempting to connect to the re-imaged pi(s) 
+
+```
+
+fatal: [master]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @\r\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\nIT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!\r\nSomeone could be eavesdropping on you right now (man-in-the-middle attack)!\r\nIt is also possible that a host key has just been changed.\r\nThe fingerprint for the ECDSA key sent by the remote host is\nSHA256:vm3d/KZcb0Ncgo1H+MIumOwp1KZTWBZZqI7tjjpkybk.\r\nPlease contact your system administrator.\r\nAdd correct host key in /Users/user/.ssh/known_hosts to get rid of this message.\r\nOffending ECDSA key in /Users/user/.ssh/known_hosts:5\r\nPassword authentication is disabled to avoid man-in-the-middle attacks.\r\nKeyboard-interactive authentication is disabled to avoid man-in-the-middle attacks.\r\npi@192.168.1.70: Permission denied (publickey,password).", "unreachable": true}
+
+```
+
+Solution - delete the old entry (entire line) with the ip address of the re-imaged node in `~/.ssh/known_hosts` file. Using `vim` you can highlight over the line in question while in CMD mode and type `dd`
+
+
+### To - Do's
+
+Make `prep-remote.yml` use a special host group for new pis while also adding them to cluster & node groups

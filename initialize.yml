@@ -1,6 +1,6 @@
 ---
 - name: Initialize Pis
-  hosts: all
+  hosts: master
   become: true
   become_user: root
   vars:
@@ -10,10 +10,13 @@
   vars_prompt:
     - name: setdefaultpass
       prompt: Set a new password for the factory default account
+      private: no
     - name: setusername
       prompt: Enter a username
+      private: no
     - name: setuserpass
       prompt: Enter a password
+      private: no
   tasks:
     - name: Create new user & assign roles
       ansible.builtin.user:

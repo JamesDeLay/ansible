@@ -1,5 +1,8 @@
 ---
 - name: Test Ping
-  hosts: nodes
+  hosts: fixme
+  vars:
+    ansible_ssh_user: pi
+    ansible_ssh_password: raspberry
   tasks:
   - action: ping

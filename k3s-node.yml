@@ -1,0 +1,15 @@
+---
+
+- name: Install K3s on Node Pi
+  hosts: nodes
+  become: true
+  become_user: root
+  vars:
+    master_token: "{{ lookup('file', './files/mastertoken.txt') }}"
+    master_ip: "{{ hostvars['master'].ansible_host }}"
+  tasks:
+    - name: Log master ip
+      ansible.builtin.debug:
+        msg: IP {{master_ip}}
+    - name: Install k3s node
+      ansible.builtin.shell: curl -sfL https://get.k3s.io | K3S_TOKEN="{{ master_token }}" K3S_URL="https://{{ master_ip }}:6443" K3S_NODE_NAME="{{inventory_hostname}}" sh -

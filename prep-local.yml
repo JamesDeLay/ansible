@@ -11,8 +11,10 @@
   vars_prompt:
     - name: piname
       prompt: Give this device a name
+      private: no
     - name: ipaddr
       prompt: Set an ip address for this device
+      private: no
   tasks:
     - name: Update cmdline file with ipaddress 
       ansible.builtin.lineinfile:
