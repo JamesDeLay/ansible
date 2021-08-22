@@ -2,35 +2,46 @@
 
 ## What does this stuff do?
 
-This repository contains opinionated playbooks that can be used to prepare a cluster of raspberry pis. The `prep.yml` playbook will update the base software and run an initial update & upgrade. The `intialize.yml` playbook will change the default credentials, lock the default account, create a new sudo enabled user, enable ssh authenticating via a key-pair, install a firewall, and much more. After running this playbook you can remove the `ansible_ssh_pass` entry from the `inventory.yml` file; ssh will now use key-pair authentication.
+This repository contains opinionated playbooks that can be used to prepare a cluster of raspberry pis to run K3s 
 
-**Warning: The intialize.yml playbook disables Wi-Fi & Bluetooth**
+The `prep-*.yml` playbooks will handle the inital configuration of the pi. These playbooks update the base software, assign an IP address, enable ssh, enable 64bit OS, and run an initial update & upgrade of the OS. 
+
+The `intialize.yml` playbook will change the default credentials, lock the default pi account, create a new sudo enabled user, enable ssh authentication using a key-pair, install a firewall, and more.
+
+The `k3s-*.yml` playbooks will configure master and server nodes and get the cluster online.
+
+**Warning: The intialize.yml playbook disables Wi-Fi & Bluetooth - comment these sections out if you need them**
 
 ## Directions
 
+**Edit `hosts:` in each playbook before running**
+**Warning: The `intialize.yml` playbook disables Wi-Fi & Bluetooth**
 
-1. Flash RaspianOS Lite onto your SD card using the Raspian Imager
+1. Flash RaspianOS Lite onto your SD card(s) using the Raspian Imager
 2. Perform Initial Boot
    1. Plug the SD card into the Pi
-   2. plug in power
-   3. wait 2 minutes
+   2. Plug in power
+   3. Wait 2 minutes
    4. Disconnect power
    5. Remove SD card 
-1. Run `ansible-playbook prep-local.yml`
-2. Plug the SD card back into the Pi & connect power
-3. Test connection to the pi `ping -c 5 <IP ADDRESS>`
-4. `ssh pi@<IP ADDRESS>` to log into the pi and then run `sudo rpi-update`
-5. Rename `inventory_template.yml` to `inventory.yml`
-6. Fill out the inventory file with information about your devices
-   1. The attached template is geared toward a cluster, mine has one master and 4 nodes
-7. Run `ansible-playbook ping.yml`
-8. Run `ansible-playbook prep-remote.yml`
-9. Run `ansible-playbook initialize.yml`
-10. Edit the `inventory.yml` and remove the `ansible_ssh_password` entry and change the `ansible_ssh_host` to your new username
-11. Run `ansible-playbook k3s-prep.yml`
-12. Run `k3s-master.yml -K`
+3. Run `ansible-playbook prep-local.yml`
+4. Plug the SD card back into the Pi & connect power
+5. Test connection to the pi `ping -c 5 <IP ADDRESS>`
+6. If the ping is successful `ssh` into the pi and run `sudo rpi-update`
+7. Rename `inventory_template.yml` to `inventory.yml`
+8. Fill out the `inventory.yml` file with information about your devices
+   1. The attached template is geared toward a cluster (mine has 1 master and 4 nodes)
+9. Run `ansible-playbook ping.yml` to test that Ansible can contact the pi(s)
+10. Run `ansible-playbook prep-remote.yml`
+11. Run `ansible-playbook initialize.yml`
+12. Edit the `inventory.yml` and remove the `ansible_ssh_password` entry and change the `ansible_ssh_host` to your new username
+13. Run `ansible-playbook k3s-prep.yml`
+14. Run `k3s-master.yml -K`
     1.  The `BECOME` password prompt is asking for you local machine sudo password so that it can write the master token to a file
-13. Run `k3s-nodes.yml`
+15. Run `k3s-nodes.yml`
+
+**Edit `hosts:` in each playbook before running**
+**Warning: The `intialize.yml` playbook disables Wi-Fi & Bluetooth**
 
 ## Requirements
 
