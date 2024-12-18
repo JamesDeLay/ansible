@@ -1,5 +1,19 @@
 ---
-- name: Test Ping
+- name: Ping Network Devices
   hosts: all
+  gather_facts: no
   tasks:
-  - action: ping
+    - name: Ping device and check connectivity
+      ansible.builtin.ping:
+        # No additional parameters needed for basic ping
+      register: ping_result
+
+    - name: Display ping result
+      ansible.builtin.debug:
+        msg: "Ping successful: {{ ping_result.ping }}"
+      when: ping_result.ping == "pong"
+
+    - name: Handle ping failure
+      ansible.builtin.fail:
+        msg: "Device is not reachable"
+      when: ping_result.ping != "pong"

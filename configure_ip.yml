@@ -1,0 +1,36 @@
+---
+- name: Configure static IP on Raspberry Pi
+  hosts: all # Target the 'nodes' group in your inventory
+  become: true # Ensure the task runs with elevated privileges
+  vars:
+    interface: eth0
+  tasks:
+    - name: Ensure the static IP configuration is present in dhcpcd.conf
+      ansible.builtin.lineinfile:
+        path: /etc/dhcpcd.conf
+        regexp: "^interface {{ interface }}"
+        line: |
+          interface {{ interface }}
+          static ip_address={{ hostvars[inventory_hostname].ansible_host }}/24
+          static routers={{ router_ip }}
+        create: yes # If the file doesn't exist, create it
+        backup: yes # Backup the file before modifying it
+        state: present # Ensure the line is present in the file
+        insertafter: "^interface {{ interface }}" # Insert after the interface line if not already present
+
+    - name: Restart dhcpcd service to apply static IP changes
+      ansible.builtin.systemd:
+        name: dhcpcd
+        state: restarted
+      when: ansible_facts['network_interfaces'][interface] is defined
+      # Ensures dhcpcd is only restarted if the interface is correctly defined
+
+    - name: Verify static IP configuration
+      ansible.builtin.command:
+        cmd: ip addr show {{ interface }}
+      register: ip_config
+      changed_when: false
+
+    - name: Output the configured static IP
+      ansible.builtin.debug:
+        msg: "Static IP for {{ interface }} is configured as: {{ ip_config.stdout }}"

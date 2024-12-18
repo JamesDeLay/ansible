@@ -1,0 +1,54 @@
+---
+- name: Copy SSH key using ssh-copy-id and restart sshd service
+  hosts: all
+  become: yes
+  vars:
+    keyname: cluster_key.pub
+  tasks:
+    - name: Ensure ssh-copy-id is available
+      ansible.builtin.package:
+        name: openssh-client
+        state: present
+
+    - name: Ensure .ssh directory exists
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.ssh"
+        state: directory
+        mode: "0700"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Ensure authorized_keys file exists
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.ssh/authorized_keys"
+        state: touch
+        mode: "0600"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Copy SSH key using ssh-copy-id
+      ansible.builtin.expect:
+        command: "ssh-copy-id -i {{ playbook_dir }}/keys/{{ keyname }} {{ ansible_user }}@{{ ansible_host }}"
+        responses:
+          "password:": "{{ ansible_ssh_pass }}"
+      become: false
+      delegate_to: localhost
+      ignore_errors: true
+
+    - name: Ensure SSH key-based authentication is enabled
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?(PubkeyAuthentication)"
+        line: "{{ item }}"
+        state: present
+      loop:
+        # - "PasswordAuthentication no"
+        # - "ChallengeResponseAuthentication no"
+        - "PubkeyAuthentication yes"
+      notify:
+        - Restart sshd
+
+    - name: Restart sshd service
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
