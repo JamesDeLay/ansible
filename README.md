@@ -73,5 +73,5 @@
 
 ## Step 7 - k3s Installation
 
-- Follow the directions in the `/k3s-ansible` directory to install k3s on your cluster
-- [k3s-ansible](/k3s-ansible/README.md)
+- Use the official [k3s Ansible playbook to install k3s on your cluster](https://github.com/k3s-io/k3s-ansible)
+- It is included in this repository as a submodule
