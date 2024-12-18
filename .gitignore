@@ -1,4 +1,2 @@
-pi_key
-pi_key.pub
 inventory.yml
-mastertoken.txt
+/keys/*

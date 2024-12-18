@@ -5,8 +5,8 @@
   become_user: root
   vars:
     factoryuser: pi
-    # Replace 'pi_key' with your public key file name 
-    ssh_key_file_name: pi_key
+    # Replace 'cluster_key' with your public key file name
+    ssh_key_file_name: cluster_key
   vars_prompt:
     - name: setdefaultpass
       prompt: Set a new password for the factory default account
@@ -28,8 +28,8 @@
       ansible.builtin.lineinfile:
         path: /etc/sudoers
         state: present
-        regexp: '^%sudo='
-        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        regexp: "^%sudo="
+        line: "%sudo ALL=(ALL) NOPASSWD: ALL"
         validate: /usr/sbin/visudo -cf %s
 
     - name: Set SSH key from file for created user {{ setusername }}
@@ -58,9 +58,9 @@
         dest: /etc/apt/apt.conf.d/50unattended-upgrades
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
         backup: yes
-    
+
     - name: Disable Wi-Fi
       ansible.builtin.systemd:
         name: wpa_supplicant.service
@@ -69,9 +69,9 @@
 
     - name: Disable Bluetooth
       ansible.builtin.systemd:
-          name: bluetooth.service
-          state: stopped
-          enabled: no
+        name: bluetooth.service
+        state: stopped
+        enabled: no
 
     - name: Install UFW
       ansible.builtin.package:
@@ -80,7 +80,7 @@
 
     - name: Enable UFW logging
       community.general.ufw:
-        logging: 'on'
+        logging: "on"
 
     - name: (UFW) enable OpenSSH
       community.general.ufw:
@@ -90,7 +90,7 @@
     - name: (UFW) enable K3s
       community.general.ufw:
         rule: allow
-        port: '6443'
+        port: "6443"
         comment: K3s
 
     - name: Deny everything and enable UFW

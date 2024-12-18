@@ -1,0 +1,21 @@
+---
+- name: Install pipx and configure path
+  hosts: master # Target all hosts in the inventory
+  become: true # Ensure the tasks run with elevated privileges
+  tasks:
+    - name: Update apt package list
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install pipx
+      ansible.builtin.apt:
+        name: pipx
+        state: present
+
+    - name: Ensure pipx path is added to the user's shell environment
+      ansible.builtin.command:
+        cmd: pipx ensurepath
+
+    - name: Install Ansible with pipx, including dependencies
+      ansible.builtin.command:
+        cmd: pipx install --include-deps ansible

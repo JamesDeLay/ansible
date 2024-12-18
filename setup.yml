@@ -1,0 +1,131 @@
+---
+- name: Update & upgrade each Raspberry Pi
+  hosts: all # This will include both master and worker nodes (from the `all` group in the inventory)
+  become: yes # Run the tasks as root (you need sudo privileges)
+  gather_facts: yes # Gather basic information about the systems
+  tasks:
+    - name: Set timezone to New York (America/New_York)
+      ansible.builtin.command:
+        cmd: timedatectl set-timezone America/New_York
+
+    - name: Update package list
+      ansible.builtin.apt:
+        update_cache: yes # Update the apt package index
+        cache_valid_time: 3600 # Cache is valid for 1 hour, no need to update more often than that
+
+    - name: Upgrade all packages to latest
+      ansible.builtin.apt:
+        upgrade: dist # Perform a distribution upgrade (which includes kernel and other system updates)
+        force_apt_get: yes # Force APT to use the apt-get backend
+
+    - name: Remove unused packages
+      ansible.builtin.apt:
+        autoremove: yes # Automatically remove unnecessary packages
+        purge: yes # Remove configuration files as well
+
+    - name: Clean up the local repository of retrieved package files
+      ansible.builtin.apt:
+        autoclean: yes # Remove any leftover deb files that are no longer needed
+
+    - name: Disable Bluetooth (if applicable)
+      ansible.builtin.lineinfile:
+        path: /boot/config.txt
+        line: "dtoverlay=pi3-disable-bt"
+        state: present
+        validate: "test -f %s" # Only edit if file exists
+      when: ansible_facts['processor'] is search('armv7') or ansible_facts['processor'] is search('armv8')
+
+    - name: Disable serial console
+      ansible.builtin.lineinfile:
+        path: /boot/config.txt
+        line: "enable_uart=0"
+        state: present
+
+    - name: Disable Avahi (mDNS/Bonjour) service
+      ansible.builtin.systemd:
+        name: avahi-daemon
+        state: stopped
+        enabled: no
+
+    - name: Disable Telnet (if installed)
+      ansible.builtin.package:
+        name: telnetd
+        state: absent
+
+    - name: Disable swap on Raspberry Pi
+      block:
+        - name: Turn off swap immediately
+          ansible.builtin.command:
+            cmd: swapoff -a
+          ignore_errors: true # Ignore errors if swap is already off
+
+    - name: Disable swap permanently by setting CONF_SWAPSIZE to 0
+      ansible.builtin.lineinfile:
+        path: /etc/dphys-swapfile
+        regexp: "^CONF_SWAPSIZE="
+        line: "CONF_SWAPSIZE=0"
+        backup: yes # Backup the file before modifying it
+
+    - name: Ensure dphys-swapfile service is disabled
+      ansible.builtin.systemd:
+        name: dphys-swapfile
+        state: restarted
+        enabled: false # Disable the service to prevent swap on boot
+      when: ansible_facts.packages['dphys-swapfile'] is defined
+      ignore_errors: true # Ignore errors if the service doesn't exist or fails
+
+    # - name: Install UFW (Uncomplicated Firewall)
+    #   ansible.builtin.package:
+    #     name: ufw
+    #     state: present
+
+    # - name: Allow SSH through the firewall
+    #   ansible.builtin.ufw:
+    #     rule: allow
+    #     name: OpenSSH
+
+    # - name: Set default firewall policies
+    #   ansible.builtin.ufw:
+    #     default: deny # Deny all incoming by default
+    #     state: enabled # This will enable UFW
+
+    # - name: Enable UFW firewall
+    #   ansible.builtin.command:
+    #     cmd: ufw enable
+    #     creates: /etc/ufw/ufw.conf # Only enable if it's not already enabled
+
+    - name: Disable UFW if installed
+      ansible.builtin.command:
+        cmd: ufw disable
+      ignore_errors: true # Ignore errors if UFW is not installed or already disabled
+
+    - name: Check if a reboot is needed
+      ansible.builtin.command:
+        cmd: /usr/bin/needs-restarting -r
+      register: reboot_required
+      ignore_errors: yes # Ignore errors in case 'needs-restarting' is not installed
+
+    - name: Reboot if necessary
+      ansible.builtin.reboot:
+        msg: "Rebooting after system update"
+        connect_timeout: 5 # Time to wait for the machine to reconnect after reboot
+        reboot_timeout: 600 # Timeout for the reboot to complete (10 minutes)
+      when: reboot_required.rc == 0 # Only reboot if 'needs-restarting' reports that a reboot is required
+
+    - name: Wait for the Raspberry Pi to come back online
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}" # Use the host variable to wait for the device to come back online
+        port: 22 # Wait for the SSH port (22) to be available
+        delay: 10 # Wait 10 seconds before checking again
+        timeout: 300 # Wait up to 5 minutes for the Pi to come back online
+
+    - name: Re-check for updates after reboot
+      ansible.builtin.apt:
+        update_cache: yes
+      when: reboot_required.rc == 0 # If a reboot was performed, re-check for any additional updates
+
+    - name: Perform another upgrade after reboot (if needed)
+      ansible.builtin.apt:
+        upgrade: dist
+        force_apt_get: yes
+      when: reboot_required.rc == 0 # If a reboot was performed, re-apply upgrades

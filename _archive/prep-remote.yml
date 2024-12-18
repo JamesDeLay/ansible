@@ -5,9 +5,8 @@
   become_user: root
   vars:
     ansible_ssh_user: pi
-    ansible_ssh_pass: raspberry
+    pi_ssh_password: raspberry
   tasks:
-
     - name: Update apt repo and cache
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
 
@@ -16,4 +15,3 @@
 
     - name: Reboot the machine
       reboot:
-    
