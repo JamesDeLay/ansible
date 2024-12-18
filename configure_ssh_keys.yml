@@ -1,9 +1,7 @@
 ---
 - name: Copy SSH key using ssh-copy-id and restart sshd service
-  hosts: all
+  hosts: nodes
   become: yes
-  vars:
-    keyname: cluster_key.pub
   tasks:
     - name: Ensure ssh-copy-id is available
       ansible.builtin.package:
@@ -28,7 +26,7 @@
 
     - name: Copy SSH key using ssh-copy-id
       ansible.builtin.expect:
-        command: "ssh-copy-id -i {{ playbook_dir }}/keys/{{ keyname }} {{ ansible_user }}@{{ ansible_host }}"
+        command: "ssh-copy-id -i {{ playbook_dir }}/keys/{{ ssh_key_name }} {{ ansible_user }}@{{ ansible_host }}"
         responses:
           "password:": "{{ ansible_ssh_pass }}"
       become: false
@@ -42,11 +40,9 @@
         line: "{{ item }}"
         state: present
       loop:
-        # - "PasswordAuthentication no"
-        # - "ChallengeResponseAuthentication no"
+        - "PasswordAuthentication no"
+        - "ChallengeResponseAuthentication no"
         - "PubkeyAuthentication yes"
-      notify:
-        - Restart sshd
 
     - name: Restart sshd service
       ansible.builtin.service:
