@@ -41,105 +41,37 @@
 - You should see something like this:
 - ![ping-test](/imgs/ping.png)
 
+---
+
 ## Step 3
 
 - Run the `setup.yml` playbook to install the base configuration on each Pi
   - `ansible-playbook -i inventory.yml setup.yml`
-  -
+
+---
 
 ## Step 4
 
-- Run the `configure_ip.yml` playbook
+- Run the `configure_ip.yml` playbook to configure the static IP addresses on each Pi
+  - `ansible-playbook -i inventory.yml configure_ip.yml`
+
+---
 
 ## Step 5
 
-- Configure passwordless SSH between each Pi in the cluster
-  - `cd keys && ssh-copy-id -i cluster_key.pub {{user}}@{{host}}`
-  - Restart sshd on each Pi
-    - `sudo systemctl restart sshd`
-  - `ssh <USERNAME>@<IP ADDRESS>`
-  - You should now be able to SSH into each Pi without a password
+- Run the `configure_ssh.yml` playbook to enable SSH keys (password-less login) on each Pi
+  - `ansible-playbook -i inventory.yml configure_ssh.yml`
 
 ---
 
-## Playbook Outlines
+## Step 6
+
+- Run the `install_ansible.yml` playbook to install Ansible v8.0+ on the master node
+  - `ansible-playbook -i inventory.yml install_ansible.yml`
 
 ---
 
-### `ping.yml`
+## Step 7 - k3s Installation
 
-**Run CMD:** `ansible-playbook -i inventory.yml ping.yml`
-
-##### Ping Test
-
-- Ping each Pi in the inventory file.
-- Display the results of the ping test.
-
----
-
-### `setup.yml`
-
-**Run CMD:** `ansible-playbook -i inventory.yml setup.yml`
-
-#### Tasks
-
-##### Set Timezone
-
-- Set to **America/New_York**.
-
-##### Update & Upgrade
-
-- Update the package list.
-- Perform a system upgrade (including kernel).
-- Remove unnecessary packages.
-- Clean up leftover package files.
-
-##### Disable Unneeded Services
-
-- Disable **Bluetooth** (on ARM-based models).
-- Disable **serial console** access.
-- Stop and disable **Avahi** (mDNS).
-- Remove **Telnet** if installed.
-
-##### Firewall Setup
-
-- Install and enable **UFW** (Uncomplicated Firewall).
-- Allow **SSH** through the firewall.
-- Set default firewall to **deny** all incoming connections.
-
-##### Reboot Management
-
-- Check if a reboot is needed.
-- Reboot the system if required.
-- Wait for the Raspberry Pi to come back online.
-- Re-check for updates after reboot.
-- Apply any missed updates after reboot.
-
----
-
-### `configure_ip.yml`
-
-**Run CMD:** `ansible-playbook -i inventory.yml configure_ip.yml`
-
-#### Tasks
-
-##### Set Static IP in `dhcpcd.conf`
-
-- Ensure the static IP configuration is added to `/etc/dhcpcd.conf`.
-- Use the `interface` variable (default `eth0`) to set the static IP and router IP.
-- If the file doesn't exist, it will be created and a backup will be made.
-- Insert the configuration after the existing `interface` line if not already present.
-
-##### Restart `dhcpcd` Service
-
-- Restart the `dhcpcd` service to apply the static IP changes.
-- Only restart if the specified interface is correctly defined.
-
-##### Verify Static IP
-
-- Run the `ip addr show` command to verify the static IP configuration on the specified interface.
-- Store the result in the `ip_config` variable.
-
-##### Output Configured Static IP
-
-- Output the configured static IP for the specified interface using the `debug` module.
+- Follow the directions in the `/k3s-ansible` directory to install k3s on your cluster
+- [k3s-ansible](/k3s-ansible/README.md)

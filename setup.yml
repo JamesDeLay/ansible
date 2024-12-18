@@ -74,26 +74,6 @@
       when: ansible_facts.packages['dphys-swapfile'] is defined
       ignore_errors: true # Ignore errors if the service doesn't exist or fails
 
-    # - name: Install UFW (Uncomplicated Firewall)
-    #   ansible.builtin.package:
-    #     name: ufw
-    #     state: present
-
-    # - name: Allow SSH through the firewall
-    #   ansible.builtin.ufw:
-    #     rule: allow
-    #     name: OpenSSH
-
-    # - name: Set default firewall policies
-    #   ansible.builtin.ufw:
-    #     default: deny # Deny all incoming by default
-    #     state: enabled # This will enable UFW
-
-    # - name: Enable UFW firewall
-    #   ansible.builtin.command:
-    #     cmd: ufw enable
-    #     creates: /etc/ufw/ufw.conf # Only enable if it's not already enabled
-
     - name: Disable UFW if installed
       ansible.builtin.command:
         cmd: ufw disable
